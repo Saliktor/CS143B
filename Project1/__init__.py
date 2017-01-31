@@ -1,12 +1,8 @@
-class PCB:
-    def __init__(self):
-        self.ID = None
-        self.resources = None
-        self.status = None
-        self.creation_tree = {"parent": None, "children": []}
-        self.priority = None
+process_list = []
+current_process = None
 
-    def __init__(self, ID:str, priority:int, resources=0, creation_tree=None, status = "running"):
+class PCB:
+    def __init__(self, ID:str, priority:int, creation_tree, resources=0, status = "running"):
         self.ID = ID
         self.resources = resources
         self.status = status
@@ -31,16 +27,38 @@ class PCB:
     def changeStatus(self, newStatus: str):
         self.status = newStatus
 
+    def addChild(self, child):
+        self.creation_tree["children"].append(child)
 
-#Init process will be only process without a parent
-def createInitProcess() -> PCB:
-    return PCB("Init", 0)
 
-def createNewProcess(p_name: str, priority: int, parent: PCB ) -> PCB:
-    return PCB(p_name, priority, creation_tree = parent)
+def checkIfProcessExist(p_ID: str) -> bool:
+    return p_ID in process_list
 
+def createNewProcess(p_ID: str, priority: int, parent=None ) -> None:
+    global current_process
+    if not checkIfProcessExist(p_ID):
+        process_list.append(p_ID)
+        current_process = PCB(p_ID, priority, creation_tree = parent)
+    else:
+        print("Process with ID \"" + p_ID + "\" already exist");
+
+def test():
+    #Need to create Ready List
+    global current_process
+
+    createNewProcess("Init", 0)
+    print(current_process)
+    print()
+    createNewProcess("a", 2, current_process)
+    print(current_process)
+    print()
+    createNewProcess("b", 2, current_process)
+    print(current_process)
+    print()
+    createNewProcess("a", 2, current_process)
 
 if __name__ == '__main__':
-    initPCB = createInitProcess()
-    myPCB = createNewProcess("a", 2, initPCB)
+    test()
+
+
 
