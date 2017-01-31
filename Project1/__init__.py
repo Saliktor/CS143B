@@ -37,7 +37,7 @@ def createInitProcess() -> PCB:
     return PCB("Init", 0)
 
 def createNewProcess(p_name: str, priority: int, parent: PCB ) -> PCB:
-    return PCB(p_name, priority, creation_tree = CreationTree(parent))
+    return PCB(p_name, priority, parent)
 
 
 if __name__ == '__main__':
