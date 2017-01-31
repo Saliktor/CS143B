@@ -1,63 +1,16 @@
-class CreationTree:
-    def __init__(self):
-        self.parent = None
-        self.children = []
-
-    def __init__(self, parent: PCB):
-        self.parent = parent
-        self.children = []
-
-    def addChild(self, child: PCB):
-        self.children.append(child)
-
-    def removeChild(self, child: PCB):
-        self.children.remove(PCB)
-
-    def __repr__(self):
-        repr_string =  "CreationTree(Parent: " + repr(self.parent)
-        repr_string += ", Children: "
-
-        child_repr_list = []
-        for child in self.children:
-            child_repr_list.append(repr(child))
-
-        if child_repr_list:
-            repr_string += ", ".join(child_repr_list)
-        else:
-            repr_string += "None"
-
-        repr_string += ")"
-
-        return repr_string
-
-    def __str__(self):
-        str_string = "Parent: " + str(self.parent)
-        str_string += ", Children: "
-
-        child_str_list = []
-        for child in self.children:
-            child_str_list.append(str(child))
-
-        if child_str_list:
-            str_string += ", ".join(child_str_list)
-        else:
-            str_string += "None"
-
-        return str_string
-
 class PCB:
     def __init__(self):
         self.ID = None
         self.resources = None
         self.status = None
-        self.creation_tree = CreationTree()
+        self.creation_tree = {"parent": None, "children": []}
         self.priority = None
 
-    def __init__(self, ID:str, priority:int, resources=0, creation_tree=CreationTree(), status = "running"):
+    def __init__(self, ID:str, priority:int, resources=0, creation_tree=None, status = "running"):
         self.ID = ID
         self.resources = resources
         self.status = status
-        self.creation_tree = creation_tree
+        self.creation_tree = {"parent": creation_tree, "children": []}
         self.priority = priority
 
     def __repr__(self):
@@ -79,6 +32,7 @@ class PCB:
         self.status = newStatus
 
 
+#Init process will be only process without a parent
 def createInitProcess() -> PCB:
     return PCB("Init", 0)
 
