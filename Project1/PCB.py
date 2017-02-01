@@ -1,8 +1,10 @@
-from PriorityQueue import PQ
+from Project1.PriorityQueue import PQ
 
 process_list = []
 ready_list = PQ()
 current_process = None
+resources = {"R1":1, "R2":2, "R3":3, "R4":4}
+    #Should make a class for this to handle holding the blocked list for each resource
 
 class PCB:
     def __init__(self, ID:str, priority:int, creation_tree, resources=0, status = "running"):
@@ -34,17 +36,22 @@ class PCB:
         self.creation_tree["children"].append(child)
 
 
+    #Create destroy method that will destroy all children, itself and remove self from parents creation_tree
+
+
 def checkIfProcessExist(p_ID: str) -> bool:
     return p_ID in process_list
 
 def createNewProcess(p_ID: str, priority: int, parent=None ) -> None:
     global current_process
+    #Check to see if resources are available as well
     if not checkIfProcessExist(p_ID):
         process_list.append(p_ID)
         current_process = PCB(p_ID, priority, creation_tree = parent)
         ready_list.add(current_process)
     else:
         print("Process with ID \"" + p_ID + "\" already exist");
+
 
 def test():
     #Need to create Ready List implemented by some sort priority queue
