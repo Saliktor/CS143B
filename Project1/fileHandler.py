@@ -1,7 +1,11 @@
 from Project1.PCB import *
 
-input_fname = "D:/input.txt"
-output_fname = "D:/31646543.txt"
+# input_fname = "D:/input.txt"
+# output_fname = "D:/31646543.txt"
+
+input_fname = "input.txt"
+output_fname = "output.txt"
+
 output_string = ""
 
 def readFile() -> None:
@@ -32,10 +36,7 @@ def readFile() -> None:
             writeToFile(output)
 
 def writeToFile(output):
-    if not output_string:
-        output.write("Process ", current_process.PID, " is running")
-    else:
-        output.write(output_string)
+    output.write(output_string + "; " + "Process ", current_process.PID, " is running")
 
 def handleInit(command_line: [str]) -> None:
     if len(command_line) > 1:
@@ -79,3 +80,24 @@ def timeOut(command_line: [str]) -> None:
 
 
 #on initial startup of the script, need to make init on own
+
+def test():
+    #Need to create Ready List implemented by some sort priority queue
+    global current_process
+
+    createNewProcess("Init", 0)
+    print(ready_list)
+    # print(current_process)
+    # print()
+    createNewProcess("a", 2, current_process)
+    print(ready_list)
+    # print(current_process)
+    # print()
+    createNewProcess("b", 1, current_process)
+    print(ready_list)
+    # print(current_process)
+    # print()
+    # createNewProcess("a", 2, current_process)
+
+if __name__ == '__main__':
+    test()

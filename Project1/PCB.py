@@ -102,6 +102,7 @@ def requestResource(RID:str, amount:int) -> str:
         current_process.addResource(RID, amount)
     else:
         blockProcess(RID, amount)
+        output_txt = "Process " + current_process.ID + " is blocked"
 
     return output_txt
 
@@ -190,26 +191,7 @@ def processTimeOut():
 def processReleaseAvailable(RID: str, amount:int):
     return current_process.resources[RID] >= amount
 
-def test():
-    #Need to create Ready List implemented by some sort priority queue
-    global current_process
 
-    createNewProcess("Init", 0)
-    print(ready_list)
-    # print(current_process)
-    # print()
-    createNewProcess("a", 2, current_process)
-    print(ready_list)
-    # print(current_process)
-    # print()
-    createNewProcess("b", 1, current_process)
-    print(ready_list)
-    # print(current_process)
-    # print()
-    # createNewProcess("a", 2, current_process)
-
-if __name__ == '__main__':
-    test()
 
 
 
