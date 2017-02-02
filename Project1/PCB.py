@@ -14,7 +14,7 @@ class PCB:
     def __init__(self, ID:str, priority:int, creation_tree):
         self.ID = ID
         self.resources = {"R1": 0, "R2": 0, "R3": 0, "R4": 0}
-        self.status = "running"
+        self.status = "ready"
         self.creation_tree = {"parent": creation_tree, "children": []}
         self.priority = priority
 
@@ -126,7 +126,11 @@ def blockProcess(RID: str, amount: int) -> None:
     updateCurrentProcess()
 
 def updateCurrentProcess():
+    global current_process
+
+    current_process.changeStatus = "ready"
     current_process = ready_list.front()
+    current_process.changeStatus = "running"
 
 
 def releaseResource(RID:str, amount: int) -> str:
@@ -155,6 +159,7 @@ def checkWaitList(RID:str):
     for request in waitList:
         if availableResources(RID, request.amount):
             request.process.addResource(RID, request.amount)
+            request.process.changeStatus("ready")
             resources[RID][1].remove(request) #Remove request from waitlist in resources
             ready_list.add(request.process)
             updateCurrentProcess()
@@ -168,8 +173,17 @@ def deleteProcess(PID:str):
     if not processExist(PID):
         output_txt = "Process with ID \"" + PID + "\" does not exist"
     process_list[PID].destroy() #Testing required
+    updateCurrentProcess()
 
     return output_txt
+
+def processTimeOut():
+    global current_process
+
+    current_process.changeStatus("ready")
+    ready_list.remove(current_process)
+    ready_list.add(current_process)
+    updateCurrentProcess()
 
 #Returns bool representing if the currently running process actually contains enough of selected resource
 #   to release

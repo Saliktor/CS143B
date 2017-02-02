@@ -65,14 +65,17 @@ def resourceRelease(command_line: [str]) -> None:
 
 def deleteProcess(command_line: [str]) -> None:
     if len(command_line) != 2:
-       output_string = "Incorrect number of arguments with de command"
+        output_string = "Incorrect number of arguments with de command"
+    else:
+        output_string = deleteProcess(command_line[1])
     #Delete currently running process and properly delete all children of process and inform parent proces that process
     #   no longer exist
 
 def timeOut(command_line: [str]) -> None:
     if len(command_line) != 1:
         output_string = "Incorrect number of arguments with to command"
-    #Unsure of functionality of this
+    else:
+        processTimeOut()
 
 
 #on initial startup of the script, need to make init on own
