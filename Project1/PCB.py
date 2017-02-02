@@ -4,7 +4,7 @@ from collections import namedtuple
 
 Request = namedtuple('Request', 'process amount')
 
-process_list = []
+process_list = {}
 ready_list = PQ()
 current_process = None
 resources = {"R1": [RCB("R1", 1, 1), []], "R2": [RCB("R2", 2, 2), []], "R3": [RCB("R3", 3, 3), []],
@@ -42,6 +42,18 @@ class PCB:
     def addChild(self, child):
         self.creation_tree["children"].append(child)
 
+    def destroy(self):
+        for child in self.creation_tree["children"]:
+            child.destroy()
+
+        current_process = self
+
+        for RID, amount in self.resources.items():
+            if amount > 0:
+                releaseResource(RID, amount)
+
+        return self.creation_tree["parent"].creation_tree["children"].remove(self)
+
 
     #Create destroy method that will destroy all children, itself and remove self from parents creation_tree
 
@@ -63,9 +75,10 @@ def createNewProcess(p_ID: str, priority: int, parent=None ) -> str:
     elif not correctProcessPriority(priority):
         output_txt = "Process cannot have a priority of " + str(priority)
     else:
-        process_list.append(p_ID)
-        ready_list.add(PCB(p_ID, priority, creation_tree = parent))
-        current_process = ready_list.front()
+        process = PCB(p_ID, priority, creation_tree=parent)
+        process_list[p_ID] = process
+        ready_list.add(process)
+        updateCurrentProcess()
 
     return output_txt
 
@@ -78,6 +91,7 @@ def validResourceSize(RID:str, amount:int) -> bool:
     return  amount <= resources[RID][0].max and amount > 0
 
 def requestResource(RID:str, amount:int) -> str:
+    global current_process
     output_txt = ""
 
     if not resourceExist(RID):
@@ -104,6 +118,8 @@ def availableResources(RID: str, amount: int) -> bool:
 
 
 def blockProcess(RID: str, amount: int) -> None:
+    global current_process
+
     resources[RID][1].append(Request(process=current_process, amount=amount))
     current_process.changeStatus("blocked")
     ready_list.remove(current_process)
@@ -114,6 +130,7 @@ def updateCurrentProcess():
 
 
 def releaseResource(RID:str, amount: int) -> str:
+    global current_process
     output_txt = ""
 
     if not resourceExist(RID):
@@ -143,6 +160,16 @@ def checkWaitList(RID:str):
             updateCurrentProcess()
         else:
             return
+
+
+def deleteProcess(PID:str):
+    output_txt = ""
+
+    if not processExist(PID):
+        output_txt = "Process with ID \"" + PID + "\" does not exist"
+    process_list[PID].destroy() #Testing required
+
+    return output_txt
 
 #Returns bool representing if the currently running process actually contains enough of selected resource
 #   to release
