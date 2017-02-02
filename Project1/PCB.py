@@ -3,13 +3,12 @@ from Project1.RCB import *
 from collections import namedtuple
 
 Request = namedtuple('Request', 'process amount')
-Resource = namedtuple('Resource', 'resource, waitList')
 
 process_list = []
 ready_list = PQ()
 current_process = None
-resources = {"R1": Resource(RCB("R1", 1, 1), []), "R2": Resource(RCB("R2", 2, 2), []), "R3": Resource(RCB("R3", 3, 3), []),
-             "R4": Resource(RCB("R4", 4, 4), [])}
+resources = {"R1": [RCB("R1", 1, 1), []], "R2": [RCB("R2", 2, 2), []], "R3": [RCB("R3", 3, 3), []],
+             "R4": [RCB("R4", 4, 4), []]}
 
 class PCB:
     def __init__(self, ID:str, priority:int, creation_tree):
@@ -74,16 +73,16 @@ def createNewProcess(p_ID: str, priority: int, parent=None ) -> str:
 def resourceExist(RID:str) -> bool:
     return RID in resources
 
-#Requested size cannot be more than the max amount of total resource available and more than 0
-def validRequestSize(RID:str, amount:int) -> bool:
-    return  amount <= resources[RID].resource.max and amount > 0
+#Requested or Release size cannot be more than the max amount of total resource available and less than or equal to 0
+def validResourceSize(RID:str, amount:int) -> bool:
+    return  amount <= resources[RID][0].max and amount > 0
 
 def requestResource(RID:str, amount:int) -> str:
     output_txt = ""
 
     if not resourceExist(RID):
         output_txt = "Resource " + RID + " does not exist"
-    elif not validRequestSize(RID, amount):
+    elif not validResourceSize(RID, amount):
         output_txt = "Request size of " + str(amount) + " for resource " + RID +" not valid"
     elif waitListEmpty(RID) and availableResources(RID, amount):
         current_process.addResource(RID, amount)
@@ -92,21 +91,63 @@ def requestResource(RID:str, amount:int) -> str:
 
     return output_txt
 
-#Access second element of the tuple for each resource to see if its waiting list is empty
+#Wait list is the second element in the list for each resource. Checks to ensure its not empty
 def waitListEmpty(RID) -> bool:
-    return not resources[RID].waitList
+    return not resources[RID][1]
 
-def availableResources(RID, amount) -> bool:
-    return resources[RID].resource.request(amount) #Namedtuple might not like this
 
-def blockProcess(RID:str, amount:int) -> None:
-    resources[RID].waitList.append(Request(process=current_process, amount = amount)) #Could cause issue if namedtuple doesnt like this
+#Resource object(RCB) is first element in the list for each resource. Sends request to RCB object to see if it
+#   has enough remaining resource for request. Will return false if not enough available or true and properly
+#   reduce the available resources from the RCB object
+def availableResources(RID: str, amount: int) -> bool:
+    return resources[RID][0].request(amount)
+
+
+def blockProcess(RID: str, amount: int) -> None:
+    resources[RID][1].append(Request(process=current_process, amount=amount))
     current_process.changeStatus("blocked")
     ready_list.remove(current_process)
     updateCurrentProcess()
 
 def updateCurrentProcess():
     current_process = ready_list.front()
+
+
+def releaseResource(RID:str, amount: int) -> str:
+    output_txt = ""
+
+    if not resourceExist(RID):
+        output_txt = "Resource " + RID + " does not exist"
+    elif not validResourceSize(RID, amount):
+        output_txt = "Release size of " + str(amount) + " for resource " + RID +" not valid"
+    elif not processReleaseAvailable(RID, amount):
+        output_txt = "Process " + current_process.ID + " does not have " + str(amount) + "of resource " + RID \
+                     + " to release"
+    else:
+        current_process.releaseResources(RID, amount)
+        resources[RID][0].release(amount)
+        checkWaitList(RID)
+
+    return output_txt
+
+
+def checkWaitList(RID:str):
+    waitList = resources[RID][1]
+    if not waitList: #if waitlist is empty then just return
+        return
+    for request in waitList:
+        if availableResources(RID, request.amount):
+            request.process.addResource(RID, request.amount)
+            resources[RID][1].remove(request) #Remove request from waitlist in resources
+            ready_list.add(request.process)
+            updateCurrentProcess()
+        else:
+            return
+
+#Returns bool representing if the currently running process actually contains enough of selected resource
+#   to release
+def processReleaseAvailable(RID: str, amount:int):
+    return current_process.resources[RID] >= amount
 
 def test():
     #Need to create Ready List implemented by some sort priority queue

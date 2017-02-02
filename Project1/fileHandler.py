@@ -59,6 +59,8 @@ def resourceRequest(command_line: [str]) -> None:
 def resourceRelease(command_line: [str]) -> None:
     if len(command_line) != 3:
         output_string = "Incorrect number of arguments with rel command"
+    else:
+        output_string = releaseResource(command_line[1], command_line[2])
     #Should release resource on behalf of currently running process. Should call function from PCB
 
 def deleteProcess(command_line: [str]) -> None:

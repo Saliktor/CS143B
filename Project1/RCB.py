@@ -10,3 +10,6 @@ class RCB:
             return True
         else:
             return False
+
+    def release(self, amount):
+        self.status += amount
