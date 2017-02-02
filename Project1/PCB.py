@@ -6,16 +6,16 @@ Request = namedtuple('Request', 'process amount')
 
 process_list = {}
 ready_list = PQ()
-current_process = None
+
 resources = {"R1": [RCB("R1", 1, 1), []], "R2": [RCB("R2", 2, 2), []], "R3": [RCB("R3", 3, 3), []],
              "R4": [RCB("R4", 4, 4), []]}
 
 class PCB:
-    def __init__(self, ID:str, priority:int, creation_tree):
+    def __init__(self, ID="None", priority=0, parent=None, status="ready"):
         self.ID = ID
         self.resources = {"R1": 0, "R2": 0, "R3": 0, "R4": 0}
         self.status = "ready"
-        self.creation_tree = {"parent": creation_tree, "children": []}
+        self.creation_tree = {"parent": parent, "children": []}
         self.priority = priority
 
     def __repr__(self):
@@ -51,12 +51,13 @@ class PCB:
         for RID, amount in self.resources.items():
             if amount > 0:
                 releaseResource(RID, amount)
+                checkWaitList(RID)
 
+        ready_list.remove(self)
+        del process_list[self.ID]
         return self.creation_tree["parent"].creation_tree["children"].remove(self)
 
-
-    #Create destroy method that will destroy all children, itself and remove self from parents creation_tree
-
+current_process = PCB()
 
 #Process ID cannot already be used by currently existing process
 def processExist(p_ID: str) -> bool:
@@ -66,7 +67,7 @@ def processExist(p_ID: str) -> bool:
 def correctProcessPriority(priority:int) -> bool:
     return priority == 1 or priority == 2
 
-def createNewProcess(p_ID: str, priority: int, parent=None ) -> str:
+def createNewProcess(p_ID: str, priority: int ) -> str:
     global current_process
     output_txt = ""
 
@@ -75,13 +76,23 @@ def createNewProcess(p_ID: str, priority: int, parent=None ) -> str:
     elif not correctProcessPriority(priority):
         output_txt = "Process cannot have a priority of " + str(priority)
     else:
-        process = PCB(p_ID, priority, creation_tree=parent)
-        process_list[p_ID] = process
-        ready_list.add(process)
-        updateCurrentProcess()
+
+        process = PCB(p_ID, priority, parent=current_process) #create process with pass arguments and cur_proc as parent
+        process_list[p_ID] = process #Add PID:process pair to process list
+        ready_list.add(process) #Add process to ready_list
+        current_process.addChild(process) #Update current process child element in creation tree
+        updateCurrentProcess() #Update current Process
 
     return output_txt
 
+
+def createInitProcess():
+    global current_process
+
+    process = PCB("init", priority=0, parent=None, status="running")
+    process_list["init"] = process
+    ready_list.add(process)
+    current_process = process
 
 def resourceExist(RID:str) -> bool:
     return RID in resources
@@ -95,14 +106,16 @@ def requestResource(RID:str, amount:int) -> str:
     output_txt = ""
 
     if not resourceExist(RID):
-        output_txt = "Resource " + RID + " does not exist"
+        output_txt = "error"
+        #output_txt = "Resource " + RID + " does not exist"
     elif not validResourceSize(RID, amount):
-        output_txt = "Request size of " + str(amount) + " for resource " + RID +" not valid"
+        output_txt = "error"
+        #output_txt = "Request size of " + str(amount) + " for resource " + RID +" not valid"
     elif waitListEmpty(RID) and availableResources(RID, amount):
         current_process.addResource(RID, amount)
     else:
         blockProcess(RID, amount)
-        output_txt = "Process " + current_process.ID + " is blocked"
+        #output_txt = "Process " + current_process.ID + " is blocked"
 
     return output_txt
 
@@ -129,9 +142,9 @@ def blockProcess(RID: str, amount: int) -> None:
 def updateCurrentProcess():
     global current_process
 
-    current_process.changeStatus = "ready"
+    current_process.changeStatus("ready")
     current_process = ready_list.front()
-    current_process.changeStatus = "running"
+    current_process.changeStatus("running")
 
 
 def releaseResource(RID:str, amount: int) -> str:
@@ -139,14 +152,16 @@ def releaseResource(RID:str, amount: int) -> str:
     output_txt = ""
 
     if not resourceExist(RID):
-        output_txt = "Resource " + RID + " does not exist"
+        output_txt = "error"
+        #output_txt = "Resource " + RID + " does not exist"
     elif not validResourceSize(RID, amount):
-        output_txt = "Release size of " + str(amount) + " for resource " + RID +" not valid"
+        output_txt = "error"
+        #output_txt = "Release size of " + str(amount) + " for resource " + RID +" not valid"
     elif not processReleaseAvailable(RID, amount):
-        output_txt = "Process " + current_process.ID + " does not have " + str(amount) + "of resource " + RID \
-                     + " to release"
+        output_txt = "error"
+        #output_txt = "Process " + current_process.ID + " does not have " + str(amount) + "of resource " + RID + " to release"
     else:
-        current_process.releaseResources(RID, amount)
+        current_process.releaseResource(RID, amount)
         resources[RID][0].release(amount)
         checkWaitList(RID)
 
@@ -172,7 +187,8 @@ def deleteProcess(PID:str):
     output_txt = ""
 
     if not processExist(PID):
-        output_txt = "Process with ID \"" + PID + "\" does not exist"
+        output_txt = "error"
+        #output_txt = "Process with ID \"" + PID + "\" does not exist"
     process_list[PID].destroy() #Testing required
     updateCurrentProcess()
 
@@ -190,8 +206,4 @@ def processTimeOut():
 #   to release
 def processReleaseAvailable(RID: str, amount:int):
     return current_process.resources[RID] >= amount
-
-
-
-
 

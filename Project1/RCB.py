@@ -4,8 +4,12 @@ class RCB:
         self.status = status
         self.max = max
 
+    def __repr__(self):
+        return "RCB(ID: " + self.RID + ", Available: " + str(self.status) + ")"
+
+
     def request(self, amount):
-        if self.status <= amount:
+        if amount <= self.status:
             self.status -= amount
             return True
         else:
@@ -13,3 +17,5 @@ class RCB:
 
     def release(self, amount):
         self.status += amount
+
+

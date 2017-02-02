@@ -17,7 +17,9 @@ class PQ:
 
     def __repr__(self):
         repr_str = "PQ("
+        str_list = []
         for pcb in self.pq:
-            repr_str += "," + repr(pcb)
+            str_list.append(repr(pcb))
+        repr_str += ", ".join(str_list)
         repr_str += ")"
         return repr_str
