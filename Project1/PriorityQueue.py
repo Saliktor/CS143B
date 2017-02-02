@@ -9,6 +9,12 @@ class PQ:
     def pop(self):
         return self.pq.pop()
 
+    def front(self):
+        return self.pq[0]
+
+    def remove(self, process):
+        self.pq.remove(process)
+
     def __repr__(self):
         repr_str = "PQ("
         for pcb in self.pq:
