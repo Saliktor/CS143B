@@ -1,10 +1,7 @@
 from Project1 import PCB
 
-# input_fname = "D:/input.txt"
-# output_fname = "D:/31646543.txt"
-
-input_fname = "input.txt"
-output_fname = "output.txt"
+input_fname = "D:/input.txt"
+output_fname = "D:/31646543.txt"
 
 output_string = ""
 
