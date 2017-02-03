@@ -1,14 +1,8 @@
 from Project1.PriorityQueue import *
-from Project1.RCB import *
+from Project1 import Resource
 from collections import namedtuple
 
 Request = namedtuple('Request', 'process amount')
-
-process_list = {}
-ready_list = PQ()
-
-resources = {"R1": [RCB("R1", 1, 1), []], "R2": [RCB("R2", 2, 2), []], "R3": [RCB("R3", 3, 3), []],
-             "R4": [RCB("R4", 4, 4), []]}
 
 class PCB:
     def __init__(self, ID="None", priority=0, parent=None, status="ready"):
@@ -24,7 +18,7 @@ class PCB:
     def __str__(self):
         string_list = []
         string_list.append("ID: " + str(self.ID))
-        string_list.append("Resources: " + str(self.resources))
+        string_list.append("Resource.: " + str(self.resources))
         string_list.append("Status: " + str(self.status))
         string_list.append("Creation_Tree: " + str(self.creation_tree))
         string_list.append("Priority: " + str(self.priority))
@@ -63,13 +57,18 @@ class PCB:
         del process_list[self.ID]
         return self.creation_tree["parent"].creation_tree["children"].remove(self)
 
+#Global Variables
 current_process = PCB()
+process_list = {}
+ready_list = PQ()
 
-#Process ID cannot already be used by currently existing process
+
+# Process ID cannot already be used by currently existing process
 def processExist(p_ID: str) -> bool:
     return p_ID in process_list
 
-#Process can only have a priority of 1-2. 0 = Init, 1 = User, 2 = System
+
+# Process can only have a priority of 1-2. 0 = Init, 1 = User, 2 = System
 def correctProcessPriority(priority:int) -> bool:
     return priority == 1 or priority == 2
 
@@ -100,24 +99,18 @@ def createInitProcess():
     ready_list.add(process)
     current_process = process
 
-def resourceExist(RID:str) -> bool:
-    return RID in resources
-
-#Requested or Release size cannot be more than the max amount of total resource available and less than or equal to 0
-def validResourceSize(RID:str, amount:int) -> bool:
-    return  amount <= resources[RID][0].max and amount > 0
 
 def requestResource(RID:str, amount:int) -> str:
     global current_process
     output_txt = ""
 
-    if not resourceExist(RID):
+    if not Resource.resourceExist(RID):
         output_txt = "error"
         #output_txt = "Resource " + RID + " does not exist"
-    elif not validResourceSize(RID, amount):
+    elif not Resource.validResourceRequest(RID, amount):
         output_txt = "error"
         #output_txt = "Request size of " + str(amount) + " for resource " + RID +" not valid"
-    elif waitListEmpty(RID) and availableResources(RID, amount):
+    elif waitListEmpty(RID) and availableResource(RID, amount):
         current_process.addResource(RID, amount)
     else:
         blockProcess(RID, amount)
@@ -127,27 +120,29 @@ def requestResource(RID:str, amount:int) -> str:
 
 #Wait list is the second element in the list for each resource. Checks to ensure its not empty
 def waitListEmpty(RID) -> bool:
-    return not resources[RID][1]
+    return not Resource.resourceDict[RID][1]
 
 
 #Resource object(RCB) is first element in the list for each resource. Sends request to RCB object to see if it
 #   has enough remaining resource for request. Will return false if not enough available or true and properly
-#   reduce the available resources from the RCB object
-def availableResources(RID: str, amount: int) -> bool:
-    return resources[RID][0].request(amount)
+#   reduce the available Resource.resourceDict from the RCB object
+def availableResource(RID: str, amount: int) -> bool:
+    return Resource.resourceDict[RID][0].request(amount)
 
 
 def blockProcess(RID: str, amount: int) -> None:
     global current_process
 
     current_process.changeStatus("blocked")
-    resources[RID][1].append(Request(process=current_process, amount=amount))
+    Resource.resourceDict[RID][1].append(Request(process=current_process, amount=amount))
     ready_list.remove(current_process)
     updateCurrentProcess()
 
 def updateCurrentProcess():
     global current_process
 
+    #Occurance can be where process is being deleted and end up in this function with status as blocked. Dont want
+    #   to change the status from blocked to running so we check to ensure status is running before changing
     if(current_process.status == "running"):
         current_process.changeStatus("ready")
 
@@ -159,10 +154,10 @@ def releaseResource(RID:str, amount: int) -> str:
     global current_process
     output_txt = ""
 
-    if not resourceExist(RID):
+    if not Resource.resourceExist(RID):
         output_txt = "error"
         #output_txt = "Resource " + RID + " does not exist"
-    elif not validResourceSize(RID, amount):
+    elif not Resource.validResourceRequest(RID, amount):
         output_txt = "error"
         #output_txt = "Release size of " + str(amount) + " for resource " + RID +" not valid"
     elif not processReleaseAvailable(RID, amount):
@@ -170,21 +165,21 @@ def releaseResource(RID:str, amount: int) -> str:
         #output_txt = "Process " + current_process.ID + " does not have " + str(amount) + "of resource " + RID + " to release"
     else:
         current_process.releaseResource(RID, amount)
-        resources[RID][0].release(amount)
+        Resource.resourceDict[RID][0].release(amount)
         checkWaitList(RID)
 
     return output_txt
 
 
 def checkWaitList(RID:str):
-    waitList = resources[RID][1]
+    waitList = Resource.resourceDict[RID][1]
     if not waitList: #if waitlist is empty then just return
         return
     for request in waitList:
-        if availableResources(RID, request.amount):
+        if availableResource(RID, request.amount):
             request.process.addResource(RID, request.amount)
             request.process.changeStatus("ready")
-            resources[RID][1].remove(request) #Remove request from waitlist in resources
+            Resource.resourceDict[RID][1].remove(request) #Remove request from waitlist in Resource.resourceDict
             ready_list.add(request.process)
             updateCurrentProcess()
         else:
@@ -226,17 +221,15 @@ def systemWipe():
 
 
 def initializeResources():
-    global resources
-    for key in resources:
-        resources[key][0].amount = resources[key][0].max
-        resources[key][1].clear()
+    for key in Resource.resourceDict:
+        Resource.resourceDict[key][0].amount = Resource.resourceDict[key][0].max
+        Resource.resourceDict[key][1].clear()
 
 
 def removeProcessFromWaitList(process: PCB) -> None:
-    global resources
-    for key in resources:
-        for request in resources[key][1]:
+    for key in Resource.resourceDict:
+        for request in Resource.resourceDict[key][1]:
             if request.process.ID == process.ID:
-                resources[key][1].remove(request)
+                Resource.resourceDict[key][1].remove(request)
                 return
 

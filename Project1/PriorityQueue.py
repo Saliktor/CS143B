@@ -15,6 +15,9 @@ class PQ:
     def remove(self, process):
         self.pq.remove(process)
 
+    def clear(self):
+        self.pq.clear()
+
     def __repr__(self):
         repr_str = "PQ("
         str_list = []
