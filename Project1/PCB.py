@@ -43,17 +43,23 @@ class PCB:
         self.creation_tree["children"].append(child)
 
     def destroy(self):
+        global current_process
+
         for child in self.creation_tree["children"]:
             child.destroy()
 
+        current_process.changeStatus("ready") #Change actual current_process to ready
         current_process = self
 
         for RID, amount in self.resources.items():
             if amount > 0:
                 releaseResource(RID, amount)
-                checkWaitList(RID)
 
-        ready_list.remove(self)
+        if self.status == "ready" or self.status =="running":
+            ready_list.remove(process=self)
+        elif self.status == "blocked":
+            removeProcessFromWaitList(self)
+
         del process_list[self.ID]
         return self.creation_tree["parent"].creation_tree["children"].remove(self)
 
@@ -134,15 +140,17 @@ def availableResources(RID: str, amount: int) -> bool:
 def blockProcess(RID: str, amount: int) -> None:
     global current_process
 
-    resources[RID][1].append(Request(process=current_process, amount=amount))
     current_process.changeStatus("blocked")
+    resources[RID][1].append(Request(process=current_process, amount=amount))
     ready_list.remove(current_process)
     updateCurrentProcess()
 
 def updateCurrentProcess():
     global current_process
 
-    current_process.changeStatus("ready")
+    if(current_process.status == "running"):
+        current_process.changeStatus("ready")
+
     current_process = ready_list.front()
     current_process.changeStatus("running")
 
@@ -206,4 +214,29 @@ def processTimeOut():
 #   to release
 def processReleaseAvailable(RID: str, amount:int):
     return current_process.resources[RID] >= amount
+
+
+def systemWipe():
+    global current_process
+
+    initializeResources()
+    ready_list.clear()
+    process_list.clear()
+    current_process = None
+
+
+def initializeResources():
+    global resources
+    for key in resources:
+        resources[key][0].amount = resources[key][0].max
+        resources[key][1].clear()
+
+
+def removeProcessFromWaitList(process: PCB) -> None:
+    global resources
+    for key in resources:
+        for request in resources[key][1]:
+            if request.process.ID == process.ID:
+                resources[key][1].remove(request)
+                return
 
