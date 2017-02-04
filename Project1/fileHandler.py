@@ -52,7 +52,7 @@ def handleInit(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) > 1:
-        output_string = "To many arguments with init command"
+        output_string = "error"
     else:
         output_string = PCB.createInitProcess()
 
@@ -60,7 +60,7 @@ def processCreation(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) != 3:
-        output_string = "Incorrect number of arguments with cr command"
+        output_string = "error"
     else:   #Handle check of inputs to ensure they can be typecasted to proper type
         output_string = PCB.createNewProcess(command_line[1], int(command_line[2]))
 
@@ -68,7 +68,7 @@ def resourceRequest(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) != 3:
-        output_string = "Incorrect number of arguments with req command"
+        output_string = "error"
     else:
         output_string = PCB.requestResource(command_line[1], int(command_line[2]))
     #Should request resource on behalf of currently running process. Should call function from PCB
@@ -77,7 +77,7 @@ def resourceRelease(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) != 3:
-        output_string = "Incorrect number of arguments with rel command"
+        output_string = "error"
     else:
         output_string = PCB.releaseResource(command_line[1], int(command_line[2]))
     #Should release resource on behalf of currently running process. Should call function from PCB
@@ -86,7 +86,7 @@ def deleteProcess(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) != 2:
-        output_string = "Incorrect number of arguments with de command"
+        output_string = "error"
     else:
         output_string = PCB.deleteProcess(command_line[1])
     #Delete process that is passed in and properly delete all children of process and inform parent proces that process
@@ -96,7 +96,7 @@ def timeOut(command_line: [str]) -> None:
     global output_string
 
     if len(command_line) != 1:
-        output_string = "Incorrect number of arguments with to command"
+        output_string = "error"
     else:
         PCB.processTimeOut()
 
@@ -106,118 +106,6 @@ def cleanSlate() -> None:
     PCB.systemWipe()
 
 
-#on initial startup of the script, need to make init on own
-
-def test():
-    PCB.createInitProcess()
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("x", 2)
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("y", 1)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("z", 2)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R1", 1)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R1", 1)
-    print(PCB.current_process.ID)
-
-    PCB.deleteProcess("z")
-    print(PCB.current_process.ID)
-
-    PCB.releaseResource("R1", 1)
-
-    PCB.deleteProcess("x")
-    print(PCB.current_process.ID)
-
-    print()
-    PCB.systemWipe()
-    print()
-
-    PCB.createInitProcess()
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("x", 1)
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("p", 1)
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("q", 1)
-    print(PCB.current_process.ID)
-
-    PCB.createNewProcess("r", 1)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R2", 2)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R3", 2)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R4", 1)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R3", 2)
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R4", 4)
-    print(PCB.current_process.ID)
-
-    PCB.requestResource("R2", 1)
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.deleteProcess("q")
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    PCB.processTimeOut()
-    print(PCB.current_process.ID)
-
-    print(PCB.requestResource("R1", 2))
-
-    # print(PCB.current_process)
-    # print(PCB.ready_list)
-    # print(PCB.resources["R3"])
-    # print(PCB.resources["R4"])
-
-
-
 if __name__ == '__main__':
-    #test()
     PCB.createInitProcess()
     readFile()
