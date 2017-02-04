@@ -84,9 +84,9 @@ def createNewProcess(p_ID: str, priority: int ) -> str:
     output_txt = ""
 
     if processExist(p_ID):
-        output_txt =  "Process with ID \"" + p_ID + "\" already exist"
+        output_txt =  "error"
     elif not correctProcessPriority(priority):
-        output_txt = "Process cannot have a priority of " + str(priority)
+        output_txt = "error"
     else:
 
         process = PCB(p_ID, priority, parent=current_process) #create process with pass arguments and cur_proc as parent
@@ -102,6 +102,9 @@ def createNewProcess(p_ID: str, priority: int ) -> str:
 def createInitProcess():
     global current_process
 
+    if processExist("init"):
+        return "error"
+
     process = PCB("init", priority=0, parent=None, status="running")
     process_list["init"] = process
     ready_list.add(process)
@@ -113,7 +116,10 @@ def requestResource(RID:str, amount:int) -> str:
     global current_process
     output_txt = ""
 
-    if not Resource.resourceExist(RID):
+    #Init process cannot request resource
+    if current_process.ID == "init":
+        output_txt = "error"
+    elif not Resource.resourceExist(RID):
         output_txt = "error"
     elif not Resource.validResourceRequest(RID, amount):
         output_txt = "error"
@@ -154,7 +160,10 @@ def releaseResource(RID:str, amount: int) -> str:
     global current_process
     output_txt = ""
 
-    if not Resource.resourceExist(RID):
+    #init cannot release resource
+    if current_process.ID == "init":
+        output_txt = "error"
+    elif not Resource.resourceExist(RID):
         output_txt = "error"
     elif not Resource.validResourceRequest(RID, amount):
         output_txt = "error"
@@ -189,7 +198,10 @@ def checkWaitList(RID:str):
 def deleteProcess(PID:str):
     output_txt = ""
 
-    if not processExist(PID):
+    #cannot delete init process
+    if PID == "init":
+        output_txt = "error"
+    elif not processExist(PID):
         output_txt = "error"
     else:
         process_list[PID].destroy()
