@@ -3,10 +3,10 @@ from collections import namedtuple
 Request = namedtuple('Request', 'process amount')
 
 class RCB:
-    def __init__(self, RID, status, max):
+    def __init__(self, RID, status, res_max):
         self.RID = RID
         self.status = status
-        self.max = max
+        self.max = res_max
 
     def __repr__(self):
         return "RCB(ID: " + self.RID + ", Available: " + str(self.status) + ")"
@@ -57,8 +57,9 @@ def availableResource(RID: str, amount: int) -> bool:
 def initializeResources():
     global resourceDict
     for key in resourceDict:
-        resourceDict[key][0].amount = resourceDict[key][0].max
+        resourceDict[key][0].status = resourceDict[key][0].max
         resourceDict[key][1].clear()
+
 
 #Wait list is the second element in the list for each resource. Checks to ensure its not empty
 def waitListEmpty(RID) -> bool:

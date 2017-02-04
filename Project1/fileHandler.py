@@ -1,7 +1,7 @@
 from Project1 import PCB
 
-input_fname = "D:/input2.txt"
-output_fname = "D:/31646543.txt"
+input_fname = "E:/input.txt"
+output_fname = "E:/31646543.txt"
 
 output_string = ""
 
@@ -9,9 +9,11 @@ def readFile() -> None:
     global output_string
     output = open(output_fname, encoding='utf8', mode='w')
     writeToFile(output)
+    line_num = 0
 
     with open(input_fname, encoding='utf8', mode='r') as f:
         for line in f:
+            line_num += 1
             if line == "\n":
                 output.write("\n")
                 continue
@@ -46,6 +48,7 @@ def writeToFile(output):
         output.write(output_string + " ")
     else: #If empty then output will just be the currently running process
         output.write(PCB.current_process.ID + " ")
+
 
 def handleInit(command_line: [str]) -> None:
     global output_string
@@ -108,7 +111,34 @@ def test():
 
     PCB.createNewProcess("x", 2)
 
-    PCB.requestResource("R2", 1)
+    PCB.createNewProcess("y", 2)
+
+    PCB.createNewProcess("m", 2)
+
+    PCB.processTimeOut()
+
+    PCB.createNewProcess("z", 2)
+
+    PCB.createNewProcess("i", 2)
+
+    PCB.processTimeOut()
+
+    print(PCB.deleteProcess("y"))
+
+    print(PCB.deleteProcess("z"))
+
+    print(PCB.deleteProcess("i"))
+
+    PCB.deleteProcess("m")
+
+    PCB.deleteProcess("x")
+
+    PCB.processTimeOut()
+
+    PCB.processTimeOut()
+
+    PCB.systemWipe()
+
     print(PCB.current_process)
     print(PCB.ready_list)
     print(PCB.process_list)
@@ -116,36 +146,7 @@ def test():
     print(PCB.Resource.resourceDict["R2"])
     print(PCB.Resource.resourceDict["R3"])
     print(PCB.Resource.resourceDict["R4"])
-    # PCB.createInitProcess()
-    #
-    # PCB.createNewProcess("x", 2)
-    #
-    # PCB.createNewProcess("y", 2)
-    #
-    # PCB.createNewProcess("m", 2)
-    #
-    # PCB.processTimeOut()
-    #
-    # PCB.createNewProcess("z", 2)
-    #
-    # PCB.createNewProcess("i", 2)
-    #
-    # PCB.processTimeOut()
-    #
-    # print(PCB.deleteProcess("y"))
-    #
-    # print(PCB.deleteProcess("z"))
-    #
-    # print(PCB.deleteProcess("i"))
-    #
-    # PCB.deleteProcess("m")
-    #
-    # PCB.deleteProcess("x")
 
-    # PCB.processTimeOut()
-    #
-    # PCB.processTimeOut()
-    #
 
 
 if __name__ == '__main__':
