@@ -16,11 +16,21 @@ class PCB:
     def __str__(self):
         string_list = []
         string_list.append("ID: " + str(self.ID))
-        string_list.append("Resource.: " + str(self.resources))
+        string_list.append("Resource: " + str(self.resources))
         string_list.append("Status: " + str(self.status))
         string_list.append("Creation_Tree: " + str(self.creation_tree))
         string_list.append("Priority: " + str(self.priority))
         return "\n".join(string_list)
+
+    def getChildren(self):
+        return self.creation_tree["children"]
+
+    #Returns whether or not passed PID is the ID to a child process of self process
+    def isChild(self, PID):
+        for child in self.creation_tree["children"]:
+            if child.ID == PID:
+                return True
+        return False
 
     def addResource(self, RID, amount):
         self.resources[RID] += amount
@@ -33,6 +43,9 @@ class PCB:
 
     def addChild(self, child):
         self.creation_tree["children"].append(child)
+
+    def removeChild(self, child):
+        self.creation_tree["children"].remove(child)
 
     def destroy(self):
         global current_process
@@ -53,7 +66,6 @@ class PCB:
             removeProcessFromWaitList(self)
 
         del process_list[self.ID]
-        return self.creation_tree["parent"].creation_tree["children"].remove(self)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -84,7 +96,7 @@ def createNewProcess(p_ID: str, priority: int ) -> str:
     output_txt = ""
 
     if processExist(p_ID):
-        output_txt =  "error"
+        output_txt = "error"
     elif not correctProcessPriority(priority):
         output_txt = "error"
     else:
@@ -123,6 +135,8 @@ def requestResource(RID:str, amount:int) -> str:
         output_txt = "error"
     elif not Resource.validResourceRequest(RID, amount):
         output_txt = "error"
+    elif requestingMoreThanAvailable(RID, amount):
+        output_txt = "error"
     elif Resource.waitListEmpty(RID) and Resource.availableResource(RID, amount):
         current_process.addResource(RID, amount)
     else:
@@ -130,6 +144,11 @@ def requestResource(RID:str, amount:int) -> str:
 
     return output_txt
 
+#Checking to ensure that the current_process isnt trying to cumulatively request more resources than max
+def requestingMoreThanAvailable(RID:str, amount:int) -> bool:
+    if current_process.resources[RID] + amount > Resource.resourceDict[RID][0].max:
+        return True
+    return False
 
 # Changes process status to blocked, removes from ready_list, adds to Request(process, amount) to resource waitingList
 #   and ensures current_process is properly updated to choose new process to run
@@ -203,12 +222,23 @@ def deleteProcess(PID:str):
         output_txt = "error"
     elif not processExist(PID):
         output_txt = "error"
+    elif not isSelfOrChild(PID):
+        output_txt = "error"
     else:
+        parent_process = process_list[PID].creation_tree["parent"]
+        process = process_list[PID]
         process_list[PID].destroy()
+        parent_process.removeChild(process)
         updateCurrentProcess()
 
     return output_txt
 
+def isSelfOrChild(PID:str) -> bool:
+    if PID == current_process.ID:
+        return True
+    elif current_process.isChild(PID):
+        return True
+    return False
 
 # Will stop currently running function, remove and add back to ready list then sets current process
 def processTimeOut():

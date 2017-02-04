@@ -1,6 +1,6 @@
 from Project1 import PCB
 
-input_fname = "D:/input.txt"
+input_fname = "D:/input2.txt"
 output_fname = "D:/31646543.txt"
 
 output_string = ""
@@ -13,7 +13,6 @@ def readFile() -> None:
     with open(input_fname, encoding='utf8', mode='r') as f:
         for line in f:
             if line == "\n":
-                cleanSlate()
                 output.write("\n")
                 continue
 
@@ -50,6 +49,7 @@ def writeToFile(output):
 
 def handleInit(command_line: [str]) -> None:
     global output_string
+    cleanSlate()
 
     if len(command_line) > 1:
         output_string = "error"
@@ -101,11 +101,54 @@ def timeOut(command_line: [str]) -> None:
         PCB.processTimeOut()
 
 def cleanSlate() -> None:
-    global output_string
-
     PCB.systemWipe()
+
+def test():
+    PCB.createInitProcess()
+
+    PCB.createNewProcess("x", 2)
+
+    PCB.requestResource("R2", 1)
+    print(PCB.current_process)
+    print(PCB.ready_list)
+    print(PCB.process_list)
+    print(PCB.Resource.resourceDict["R1"])
+    print(PCB.Resource.resourceDict["R2"])
+    print(PCB.Resource.resourceDict["R3"])
+    print(PCB.Resource.resourceDict["R4"])
+    # PCB.createInitProcess()
+    #
+    # PCB.createNewProcess("x", 2)
+    #
+    # PCB.createNewProcess("y", 2)
+    #
+    # PCB.createNewProcess("m", 2)
+    #
+    # PCB.processTimeOut()
+    #
+    # PCB.createNewProcess("z", 2)
+    #
+    # PCB.createNewProcess("i", 2)
+    #
+    # PCB.processTimeOut()
+    #
+    # print(PCB.deleteProcess("y"))
+    #
+    # print(PCB.deleteProcess("z"))
+    #
+    # print(PCB.deleteProcess("i"))
+    #
+    # PCB.deleteProcess("m")
+    #
+    # PCB.deleteProcess("x")
+
+    # PCB.processTimeOut()
+    #
+    # PCB.processTimeOut()
+    #
 
 
 if __name__ == '__main__':
-    PCB.createInitProcess()
-    readFile()
+    #test()
+     PCB.createInitProcess()
+     readFile()

@@ -43,7 +43,7 @@ def resourceExist(RID:str) -> bool:
 
 # Requested or Release size cannot be more than the max amount of total resource available and less than or equal to 0
 def validResourceRequest(RID:str, amount:int) -> bool:
-    return 0 <= amount <= resourceDict[RID][0].max
+    return 0 < amount <= resourceDict[RID][0].max
 
 
 #Resource object(RCB) is first element in the list for each resource. Sends request to RCB object to see if it
@@ -55,6 +55,7 @@ def availableResource(RID: str, amount: int) -> bool:
 
 #Goes thorugh resourceDict and resets RCB's amount back to their max and clears their waiting list
 def initializeResources():
+    global resourceDict
     for key in resourceDict:
         resourceDict[key][0].amount = resourceDict[key][0].max
         resourceDict[key][1].clear()
