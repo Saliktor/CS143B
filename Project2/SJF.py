@@ -1,5 +1,6 @@
 from __future__ import division
 
+#Global variable representing a time stamp of the system
 currentTime = 0
 
 def main(processes):
@@ -11,13 +12,15 @@ def main(processes):
 
     while(waitList):
         currentProcess = getNextProcess(waitList)
-        currentTime += currentProcess[1]
+
+        #In case a process has run time of 0, we simply wont increment current time and will add it to finishedlist
+        if currentProcess[1] != 0:
+            #Process will be run until completed thus increment currentTime according to how long process will take
+            currentTime += currentProcess[1]
 
         #Gets the index of the currentProcess according to passed list processes for ordering of finishedList
         index = processes.index(currentProcess)
-
         finishedList[index] = currentTime - currentProcess[0]
-
         waitList.remove(currentProcess)
 
     #Return a list with first element being average turnaround time followed by turnaround time for each process in order they arrived

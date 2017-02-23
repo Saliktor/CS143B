@@ -37,22 +37,26 @@ def main(processes):
     waitList = []
     index = 0
 
+    #Create a list of MLFProcess objects from passed list of tuple objects
     for process in processes:
         waitList.append(MLFProcess(index, process[0], process[1]))
         index += 1
 
-
+    #While there are still processes still needing to execute, rerun loop
     while(waitList):
         currentProcess = getNextProcess(waitList)
 
-        currentTime += 1
-        currentProcess.cycle()
+        #If the currentProcess happens to have an execution time of 0, skip this and next conditional statement will be executed
+        if currentProcess.exe_time != 0:
+            currentTime += 1
+            currentProcess.cycle()
 
+        #If currentProcess has been fully executed, add its turnaround time to proper location in finished list and remove from waitlist
         if currentProcess.exe_time == 0:
             finishedList[currentProcess.index] = currentTime - currentProcess.arrival
             waitList.remove(currentProcess)
 
-    #Return a list with first element being average turnaround time followed by turnaround time for each process in order they arrived
+    #Return a list with first element being average turnaround time followed by turnaround time for each process in order they arrivedd
     return [sum(finishedList)/len(finishedList)] + finishedList
 
 

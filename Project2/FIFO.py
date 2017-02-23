@@ -10,8 +10,10 @@ def main(processes):
         if currentTime < process[0]:
             currentTime = process[0]
 
-        #Process will be run until completed thus increment currentTime according to how long process will take
-        currentTime += process[1]
+        #In case a process has run time of 0, we simply wont increment current time and will add it to finishedlist
+        if process[1] != 0:
+            #Process will be run until completed thus increment currentTime according to how long process will take
+            currentTime += process[1]
 
         #The run time of the process is the currentTime minus the arrival time of the process
         finishedList.append(currentTime - process[0])
