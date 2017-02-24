@@ -44,8 +44,8 @@ def getNextProcess(processList):
     #If no processes are currently available due to currentTime, increment currentTime to next available process in passed list
     #   which has processes ordered by arrival time and recursively call function
     if not availableProcesses:
-        currentTime = processList[0]
-        availableProcesses = getNextProcess(processList)
+        currentTime = processList[0][0]
+        return getNextProcess(processList)
 
     #Sort the available processes according to the time it would take to complete process
     availableProcesses.sort(key=lambda x: x[1])

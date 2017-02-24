@@ -78,7 +78,7 @@ def getNextProcess(processList):
     #   which has processes ordered by arrival time and recursively call function
     if not availableProcesses:
         currentTime = processList[0].arrival
-        availableProcesses = getNextProcess(processList)
+        return getNextProcess(processList)
 
     #Sort the available processes according to the time it would take to complete process
     availableProcesses.sort(key=lambda x: x.queue_level)

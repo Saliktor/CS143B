@@ -28,7 +28,7 @@ def readFile():
     writeToFile()
 
 def writeToFile():
-    global output_string
+    global output_string, output_fname
 
     with open(output_fname, encoding='utf8', mode='w') as f:
         f.write(output_string)

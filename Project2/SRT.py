@@ -1,5 +1,4 @@
 from __future__ import division
-from collections import OrderedDict
 
 class SRTProcess:
     # This is a 2D list representing each level of the MLF.
@@ -62,7 +61,7 @@ def getNextProcess(processList):
     #   which has processes ordered by arrival time and recursively call function
     if not availableProcesses:
         currentTime = processList[0].arrival
-        availableProcesses = getNextProcess(processList)
+        return getNextProcess(processList)
 
     #Sort the available processes according to the time it would take to complete process
     availableProcesses.sort(key=lambda x: x.exe_time)
