@@ -1,28 +1,16 @@
-from Project3 import Segmentation
-
 #Physical Memory
 #1024 Frames each of size 512 words(int)
 class PM:
-    def __init__(self, s, f, p = -1):
+    def __init__(self):
         frame = [0]*512
-        self.memory = [frame]*1024 #Memory is composed of a 2D list with each element being a list of 512 elements representing a frame
+        self.memory = [x[:] for x in [frame]*1024] #Memory is composed of a 2D list with each element being a list of 512 elements representing a frame
         self.ST = self.memory[0] #ST is always takes up very first frame in memory
         self.usedFrames = [0]
-
-        '''
-        s is the index for the segmentation table
-        f is start address
-        p is the index for page table
-        '''
-
-        if p == -1:
-            initST(s, f)
-        else:
-            initPT(s, f, p)
 
     def getNextAvailableFrame(self):
         for i in range(1024):
             if i not in self.usedFrames:
+
                 return i
 
         return -1 #No frames available
@@ -34,11 +22,13 @@ class PM:
 
         return -1  # No frames available
 
+
     def initST(self, ST_Index, PT_Address):
         if PT_Address == -1:
             self.ST[ST_Index] = -1
         else:
-            PT_Frame = PT_Address/512 #Each frame is 512 and address will be multiple of it
+            PT_Frame = PT_Address//512 #Each frame is 512 and address will be multiple of it
+
             if PT_Frame not in self.usedFrames and PT_Frame+1 not in self.usedFrames:
                 self.ST[ST_Index] = PT_Frame
                 self.usedFrames.extend((PT_Frame, PT_Frame+1))
@@ -57,7 +47,7 @@ class PM:
         if Page_Address == -1:
             self.memory[PT_Frame][PT_index] = -1
         else:
-            Page_Frame = Page_Address/512
+            Page_Frame = Page_Address//512
             if Page_Frame not in self.usedFrames:
                 self.memory[PT_Frame][PT_index] = Page_Frame
                 self.usedFrames.append(Page_Frame)
@@ -76,7 +66,7 @@ class PM:
 
 
     def readMemory(self, VA):
-        ST_Index, PT_Index, Page_Offset = self.breakdownVA(VA)
+        ST_Index, PT_Index, Page_Offset = self.breakDownVA(VA)
 
         #Get PT_Frame value, if -1 or 0 then just return
         PT_Frame = self.ST[ST_Index]
@@ -91,13 +81,13 @@ class PM:
         if PageFrame <= 0:
             return PageFrame
 
-        #Get value located at the offset at the page location
-        value = self.memory[PageFrame][Page_Offset]
+        #Return address of offset into page which will be the current frame time 512 plus the offset into page
+        value = PageFrame*512 + Page_Offset
         return value
 
 
-    def writeMemory(self, VA, writeValue):
-        ST_Index, PT_Index, Page_Offset = self.breakdownVA(VA)
+    def writeMemory(self, VA):
+        ST_Index, PT_Index, Page_Offset = self.breakDownVA(VA)
 
         #Get PT_Frame, if -1 then out of memory and return, if 0 then PT has not been created thus appropriately make and continue
         PT_Frame = self.ST[ST_Index]
@@ -128,10 +118,27 @@ class PM:
             PageFrame = frame
             self.usedFrames.append(frame)
 
-        #Get value located at the offset at the page location
-        self.memory[PageFrame][Page_Offset] = writeValue
-        return 1 #This will symbolize that write was succesful
+        # Return address of offset into page which will be the current frame time 512 plus the offset into page
+        value = PageFrame*512 + Page_Offset
+        return value
 
+    def copy(self):
+        newPM = PM()
+        newPM.memory = self.memory[:]
+        newPM.ST = self.ST
+        newPM.usedFrames = self.usedFrames
+        return newPM
+
+
+    def __str__(self):
+        return_string = ""
+
+        ST_List = []
+        for i in range(512):
+            if self.ST[i] != 0:
+                ST_List.append((i, self.ST[i]))
+
+        return ST_List.__str__()
 
 
 
